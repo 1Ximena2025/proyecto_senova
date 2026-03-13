@@ -1,0 +1,149 @@
+h2{
+  margin:0;
+}
+
+.grupo{
+  margin-bottom:20px;
+}
+
+.checkbox{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px;
+}
+
+.boton{
+  text-align:center;
+}
+
+input[type="submit"]{
+  border-radius:6px;
+  width:150px;
+  transition:0.3s;
+}
+
+input[type="submit"]:hover{
+  background-color:#0a7a0a;
+}
+/* cuerpo de la página */
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f2f2f2;
+}
+
+/* encabezado */
+.inicio{
+  border: 2px solid #006100;  
+  background-color: #006100;
+  color: white;  
+  padding: 15px;
+  display: flex;           
+  align-items: center;      
+  gap: 20px;              
+  justify-content: center;
+  text-align: center;
+}
+
+.inicio img {
+  width: 80px;             
+  height: auto;
+}
+
+/* formulario */
+.cuadro{
+  border: 2px solid #006100;
+  border-radius: 10px;        
+  padding: 30px;
+  max-width: 600px;
+  margin: 30px auto;          
+  background-color: #ffffff;  
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* etiquetas */
+label{
+  font-weight: bold;
+}
+
+/* inputs generales */
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 18px;
+  font-size: 15px;
+  border-radius: 5px;
+  border: 2px solid #006100;
+  box-sizing: border-box;
+}
+
+/* nombre */
+#nombre{
+  border: 2px solid #006100;
+}
+
+/* proyecto */
+#opcion {
+  border: 2px solid #006100;
+}
+
+/* checkboxes */
+input[type="checkbox"] {
+  accent-color: #006100;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+/* alineación de checkboxes */
+.checkbox-group{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* fecha */
+#fecha {
+  border: 2px solid #006100;
+}
+
+/* subir archivo */
+#archivo {
+  border: 2px solid #006100;
+}
+
+/* link */
+#linkArchivo {
+  border: 2px solid #006100;
+}
+
+/* observaciones */
+#observaciones {
+  border: 2px solid #006100;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+/* botón */
+input[type="submit"] {
+  background-color: #006100;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  width: 150px;
+  display: block;
+  margin: 20px auto 0 auto;
+  transition: 0.3s;
+}
+
+/* efecto hover */
+input[type="submit"]:hover {
+  background-color: #0a7a0a;
+  transform: scale(1.05);
+}

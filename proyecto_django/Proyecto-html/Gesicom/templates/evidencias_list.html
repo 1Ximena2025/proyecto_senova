@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Evidencias</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/formulario.css' %}"> <!-- reutilizamos estilo básico -->
+</head>
+<body>
+<h1>Mis Evidencias</h1>
+
+{% if envios %}
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Nombre</th>
+            <th>Proyecto</th>
+            <th>Tipo</th>
+            <th>Link / Archivo</th>
+            <th>Observaciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for envio in envios %}
+        <tr>
+            <td>{{ envio.fecha_envio }}</td>
+            <td>{{ envio.nombre }}</td>
+            <td>{{ envio.proyecto }}</td>
+            <td>{{ envio.tipo_evidencia }}</td>
+            <td>
+                {% if envio.link_evidencia %}
+                    <a href="{{ envio.link_evidencia }}" target="_blank">Enlace</a>
+                {% elif envio.archivo_evidencia %}
+                    <a href="{{ envio.archivo_evidencia.url }}" target="_blank">Archivo</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ envio.observaciones }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    {% if envios.has_previous %}
+        <a href="?page={{ envios.previous_page_number }}">Anterior</a>
+    {% endif %}
+    <span>Página {{ envios.number }} de {{ envios.paginator.num_pages }}</span>
+    {% if envios.has_next %}
+        <a href="?page={{ envios.next_page_number }}">Siguiente</a>
+    {% endif %}
+</div>
+
+{% else %}
+<p>No hay evidencias registradas.</p>
+{% endif %}
+
+</body>
+</html>
