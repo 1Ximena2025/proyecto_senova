@@ -31,12 +31,14 @@ urlpatterns = [
     
     path('evidencia/', gesicom_views.evidencia, name='evidencia'),
     path('evidencias/', gesicom_views.evidencias_list, name='evidencias_list'),
+    path('evidencias/<int:pk>/set_aprobada/', gesicom_views.set_aprobada, name='set_aprobada'),
     
     path('access-denied/', gesicom_views.access_denied, name='access_denied'),
     path('administracion/', gesicom_views.admin_menu, name='admin_menu'),
     path('proyecciones/', gesicom_views.proyecciones, name='proyecciones'),
     path('reportes/', gesicom_views.reportes, name='reportes'),
     path('reportes.csv', gesicom_views.reportes_csv, name='reportes_csv'),
+    path('reportes_trimestrales.csv', gesicom_views.reportes_trimestrales_csv, name='reportes_trimestrales_csv'),
     
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='Registro/password_reset_form.html'), name='password_reset'),
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='Registro/password_reset_done.html'), name='password_reset_done'),
