@@ -6,109 +6,94 @@
 {% endblock %}
 
 {% block content %}
-
-
-    <div class="content">
-        <header>
-          <img src="{% static '/img/gesicom.png' %}" alt="GESICOM" class="logo" style="height:200px;width:auto;object-fit:contain;flex-shrink:0;">
-
-            <nav>
-                <a href="{% url 'home' %}">Inicio</a>
-                <a href="{% url 'evidencia' %}">Evidencia</a>
-                <a href="{% url 'logout' %}">Cerrar sesión</a>
-            </nav>
-        </header>
-
-        <main>
-            <h1>Editar Perfil</h1>
-
-            <form method="POST">
+<div class="content">
+    <header>
+        <img src="{% static '/img/gesicom.png' %}" alt="GESICOM" class="logo">
+        <nav>
+            <a href="{% url 'home' %}">Inicio</a>
+            <a href="{% url 'evidencia' %}">Evidencia</a>
+            <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-
-                <label for="nombre">Nombre</label>
-                <div class="input-row">
-                    <span class="input-icon left">
-                        <svg viewBox="0 0 24 24" width="32" height="32">
-                            <circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M2 20c0-3.5 3.5-5.25 6-5.25" stroke="currentColor" stroke-width="2" fill="none"/>
-                        </svg>
-                    </span>
-                    <input class="input-linea" type="text" id="nombre" name="nombre" value="{{ user.first_name }}">
-                </div>
-
-                <label for="apellido">Apellido</label>
-                <div class="input-row">
-                    <span class="input-icon left">
-                        <svg viewBox="0 0 24 24" width="32" height="32">
-                            <circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M2 20c0-3.5 3.5-5.25 6-5.25" stroke="currentColor" stroke-width="2" fill="none"/>
-                        </svg>
-                    </span>
-                    <input class="input-linea" type="text" id="apellido" name="apellido" value="{{ user.last_name }}">
-                </div>
-
-                <label for="correo">Correo Electrónico</label>
-                <div class="input-row">
-                    <span class="input-icon left">
-                        <svg viewBox="0 0 24 24" width="32" height="32">
-                            <path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="2" fill="none"/>
-                        </svg>
-                    </span>
-                    <input class="input-linea" type="email" id="correo" name="correo" value="{{ user.email }}">
-                </div>
-
-                <label for="contrasena">Contraseña</label>
-                <div class="input-row">
-
-                    <button type="button" id="toggle-contrasena" class="toggle-password left">
-                        <svg viewBox="0 0 24 24" width="32" height="32">
-                            <path d="M1 12s4-7 11-7c3 0 5.7 1 7.8 2.6" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M23 12s-4 7-11 7c-3 0-5.7-1-7.8-2.6" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M3 3l18 18" stroke="currentColor" stroke-width="2" fill="none"/>
-                        </svg>
-                    </button>
-
-                    <input class="input-linea"
-                           type="password"
-                           id="contrasena"
-                           name="contrasena"
-                           minlength="8"
-                           maxlength="8"
-                           pattern="^(?=.*[A-Z])(?=.*[0-9\\W]).{8}$"
-                           title="Debe tener exactamente 8 caracteres, una mayúscula y un número o símbolo">
-                </div>
-
-                <button type="submit">Guardar</button>
-
+                <button type="submit">Cerrar sesión</button>
             </form>
-        </main>
-    </div>
-</div>
+        </nav>
+    </header>
 
+    <main>
+        <h1>Editar Perfil</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label for="nombre">Nombre</label>
+            <div class="input-row">
+                <span class="input-icon left">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M2 20c0-3.5 3.5-5.25 6-5.25" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </span>
+                <input class="input-linea" type="text" id="nombre" name="nombre" value="{{ user.first_name }}">
+            </div>
+
+            <label for="apellido">Apellido</label>
+            <div class="input-row">
+                <span class="input-icon left">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <circle cx="8" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M2 20c0-3.5 3.5-5.25 6-5.25" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </span>
+                <input class="input-linea" type="text" id="apellido" name="apellido" value="{{ user.last_name }}">
+            </div>
+
+            <label for="correo">Correo Electrónico</label>
+            <div class="input-row">
+                <span class="input-icon left">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <path d="M3 5h18v14H3z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </span>
+                <input class="input-linea" type="email" id="correo" name="correo" value="{{ user.email }}">
+            </div>
+
+            <label for="contrasena">Contraseña</label>
+            <div class="input-row">
+                <button type="button" id="toggle-contrasena" class="toggle-password left">
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <path d="M1 12s4-7 11-7c3 0 5.7 1 7.8 2.6" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M23 12s-4 7-11 7c-3 0-5.7-1-7.8-2.6" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M3 3l18 18" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                </button>
+                <input class="input-linea"
+                       type="password"
+                       id="contrasena"
+                       name="contrasena"
+                       minlength="8"
+                       maxlength="8"
+                       pattern="^(?=.*[A-Z])(?=.*[0-9\\W]).{8}$"
+                       title="Debe tener exactamente 8 caracteres, una mayúscula y un número o símbolo">
+            </div>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </main>
+</div>
 
 <script>
 (function(){
     var input = document.getElementById('contrasena');
     var btn = document.getElementById('toggle-contrasena');
-
     if(!input || !btn) return;
-
     var eyeOpen = '<svg viewBox="0 0 24 24" width="28" height="28"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>';
-
     var eyeOff = '<svg viewBox="0 0 24 24" width="28" height="28"><path d="M1 12s4-7 11-7c3 0 5.7 1 7.8 2.6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M23 12s-4 7-11 7c-3 0-5.7-1-7.8-2.6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg>';
-
     btn.addEventListener('click', function(){
-
         var visible = input.type === 'text';
-
         input.type = visible ? 'password' : 'text';
-
         btn.innerHTML = visible ? eyeOff : eyeOpen;
-
     });
-
 })();
 </script>
-
 {% endblock %}
