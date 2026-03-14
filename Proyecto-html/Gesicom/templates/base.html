@@ -5,17 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}GESICOM{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'CSS/main.css' %}">
+    <link rel="stylesheet" href="{% static 'CSS/editar.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{% url 'home' %}">Inicio</a>
-            <a href="{% url 'evidencia' %}">Enviar evidencia</a>
-            <a href="{% url 'editar_perfil' %}">Perfil</a>
-        </nav>
-    </header>
+
 
     <main>
         {% block content %}{% endblock %}
