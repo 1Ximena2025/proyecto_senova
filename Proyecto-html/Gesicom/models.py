@@ -29,6 +29,7 @@ class Envio(models.Model):
     link_evidencia = models.URLField(max_length=200, blank=True, null=True)
     archivo_evidencia = models.FileField(upload_to='evidencias/', blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
+    aprobada = models.BooleanField(default=False)
     fecha_envio = models.DateField(auto_now_add=True)
     class Meta:
         ordering = ['-fecha_envio']

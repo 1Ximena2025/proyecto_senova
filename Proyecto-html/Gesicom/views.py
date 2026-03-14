@@ -6,7 +6,7 @@ Incluye:
 - Reportes y exportación CSV
 - Control de acceso por grupos/roles
 """
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.contrib.auth import logout
@@ -18,8 +18,10 @@ from .utils import (
 )
 from django.http import HttpResponse
 import csv
-
-from django.shortcuts import render
+import datetime
+import json
+from django.views.decorators.http import require_POST
+from django.contrib import messages
 
 def editar_perfil(request):
     return render(request, 'editar_perfil/editar.html')
@@ -177,6 +179,55 @@ def reportes_csv(request):
     return respuesta
 
 
+def reportes_trimestrales_csv(request):
+    """Exporta datos trimestrales agrupados a CSV según filtros (quarters opcional)."""
+    proyecto = request.GET.get('proyecto', '')
+    inicio = request.GET.get('start', '')
+    fin = request.GET.get('end', '')
+    try:
+        num_quarters = int(request.GET.get('quarters', 4))
+    except Exception:
+        num_quarters = 4
+    num_quarters = max(1, min(24, num_quarters))
+
+    consulta = Envio.objects.all()
+    if proyecto:
+        consulta = consulta.filter(proyecto=proyecto)
+    consulta = apply_date_filters(consulta, inicio, fin)
+
+    hoy = datetime.date.today()
+    current_year = hoy.year
+    current_quarter = (hoy.month - 1) // 3 + 1
+    q_list = []
+    y = current_year
+    q = current_quarter
+    for _ in range(num_quarters):
+        q_list.insert(0, (y, q))
+        q -= 1
+        if q == 0:
+            q = 4
+            y -= 1
+
+    respuesta = HttpResponse(content_type='text/csv')
+    respuesta['Content-Disposition'] = 'attachment; filename="reportes_trimestrales.csv"'
+    escritor = csv.writer(respuesta)
+    escritor.writerow(['Trimestre', 'Nuevas', 'Aprobadas'])
+    for (y, q) in q_list:
+        start_month = (q - 1) * 3 + 1
+        start_date = datetime.date(y, start_month, 1)
+        end_month = start_month + 2
+        if end_month == 12:
+            end_day = 31
+        else:
+            next_month = end_month + 1
+            end_day = (datetime.date(y, next_month, 1) - datetime.timedelta(days=1)).day
+        end_date = datetime.date(y, end_month, end_day)
+        nuevas = consulta.filter(fecha_envio__gte=start_date, fecha_envio__lte=end_date).count()
+        aprob = consulta.filter(fecha_envio__gte=start_date, fecha_envio__lte=end_date, aprobada=True).count()
+        escritor.writerow([f'Q{q} {y}', nuevas, aprob])
+    return respuesta
+
+
 @login_required
 def evidencia(request):
     if request.method == 'POST':
@@ -251,10 +302,13 @@ def evidencias_list(request):
     """Lista de envíos con filtros, búsqueda y paginación."""
     consulta = Envio.objects.select_related('usuario').all()
 
-    # Filtro por proyecto
+    # Filtros básicos: proyecto y fechas
     proyecto = request.GET.get('proyecto', '')
+    inicio = request.GET.get('start', '')
+    fin = request.GET.get('end', '')
     if proyecto:
         consulta = consulta.filter(proyecto=proyecto)
+    consulta = apply_date_filters(consulta, inicio, fin)
 
     # Búsqueda por nombre, tipo y observaciones
     termino_busqueda = (request.GET.get('q') or '').strip()
@@ -280,11 +334,128 @@ def evidencias_list(request):
     numero_pagina = request.GET.get('page')
     objeto_pagina = paginador.get_page(numero_pagina)
 
+    # Estadísticas para panel
+    total_envios = consulta.count()
+    hoy = datetime.date.today()
+    hace_30 = hoy - datetime.timedelta(days=30)
+    hace_60 = hoy - datetime.timedelta(days=60)
+    nuevas_30d = consulta.filter(fecha_envio__gte=hace_30).count()
+    nuevas_prev_30d = consulta.filter(fecha_envio__gte=hace_60, fecha_envio__lt=hace_30).count()
+
+    # Conteo de aprobadas usando el campo explícito 'aprobada'
+    aprobadas = consulta.filter(aprobada=True).count()
+    aprobadas_30d = consulta.filter(aprobada=True, fecha_envio__gte=hace_30).count()
+    aprobadas_prev_30d = consulta.filter(aprobada=True, fecha_envio__gte=hace_60, fecha_envio__lt=hace_30).count()
+
+    # Cambios porcentuales (comparando últimos 30 días vs 30 días anteriores)
+    def pct_change(current, previous):
+        try:
+            if previous == 0:
+                return None if current == 0 else 100.0
+            return round(((current - previous) / previous) * 100, 1)
+        except Exception:
+            return None
+
+    pct_nuevas = pct_change(nuevas_30d, nuevas_prev_30d)
+    pct_aprobadas = pct_change(aprobadas_30d, aprobadas_prev_30d)
+    pct_total = pct_change(nuevas_30d, nuevas_prev_30d)  # proxy: growth driven by nuevas
+    # Valores absolutos para mostrar sin usar filtros no disponibles en plantillas
+    pct_nuevas_abs = abs(pct_nuevas) if pct_nuevas is not None else None
+    pct_aprobadas_abs = abs(pct_aprobadas) if pct_aprobadas is not None else None
+    pct_total_abs = abs(pct_total) if pct_total is not None else None
+
+    # Conteo por proyecto (categorías por áreas: TUGA, DEPOS, GIVIT, LEM, etc.)
+    proyectos_guardados = list(Envio.objects.values_list('proyecto', flat=True).distinct())
+    choice_map = {c[0]: c[1] for c in Envio.PROYECTO_CHOICES}
+    categorias_labels = []
+    categorias_data = []
+    for code, label in Envio.PROYECTO_CHOICES:
+        if code and code in proyectos_guardados:
+            categorias_labels.append(label)
+            categorias_data.append(consulta.filter(proyecto=code).count())
+
+    # Datos trimestrales (últimos N trimestres, configurable por GET 'quarters')
+    try:
+        num_quarters = int(request.GET.get('quarters', 4))
+    except Exception:
+        num_quarters = 4
+    num_quarters = max(1, min(12, num_quarters))
+    trimestres_labels = []
+    datos_trimestrales_nuevas = []
+    datos_trimestrales_aprobadas = []
+    # calcular trimestre actual
+    current_year = hoy.year
+    current_quarter = (hoy.month - 1) // 3 + 1
+    # construir lista de (year,quarter) para últimos num_quarters trimestres
+    q_list = []
+    y = current_year
+    q = current_quarter
+    for _ in range(num_quarters):
+        q_list.insert(0, (y, q))
+        q -= 1
+        if q == 0:
+            q = 4
+            y -= 1
+
+    for (y, q) in q_list:
+        # determinar rango de fechas del trimestre
+        start_month = (q - 1) * 3 + 1
+        start_date = datetime.date(y, start_month, 1)
+        # end_date: último día del tercer mes
+        end_month = start_month + 2
+        if end_month == 12:
+            end_day = 31
+        else:
+            # obtener primer día del siguiente mes y restar 1
+            next_month = end_month + 1
+            end_day = (datetime.date(y, next_month, 1) - datetime.timedelta(days=1)).day
+        end_date = datetime.date(y, end_month, end_day)
+
+        trimestres_labels.append(f"Q{q} {y}")
+        datos_trimestrales_nuevas.append(consulta.filter(fecha_envio__gte=start_date, fecha_envio__lte=end_date).count())
+        datos_trimestrales_aprobadas.append(consulta.filter(fecha_envio__gte=start_date, fecha_envio__lte=end_date, aprobada=True).count())
+
+    # Top usuarios (por número de envíos)
+    top_users_qs = consulta.values('usuario__first_name', 'usuario__last_name', 'usuario__username').annotate(total=Count('id')).order_by('-total')[:6]
+    usuarios_labels = []
+    usuarios_data = []
+    for u in top_users_qs:
+        name = u.get('usuario__first_name') or u.get('usuario__username') or 'Usuario'
+        if u.get('usuario__last_name'):
+            name = f"{name} {u.get('usuario__last_name')}"
+        usuarios_labels.append(name)
+        usuarios_data.append(u['total'])
+
+    # Opciones de proyectos existentes en la base (mostrar solo los guardados)
+    proyectos_guardados = list(Envio.objects.values_list('proyecto', flat=True).distinct())
+    choice_map = {c[0]: c[1] for c in Envio.PROYECTO_CHOICES}
+    opciones_proyectos = [(p, choice_map.get(p, p)) for p in proyectos_guardados if p]
+
     context = {
         'envios': objeto_pagina,
         'proyecto': proyecto,
         'order': orden,
         'dir': direccion,
+        'start': inicio,
+        'end': fin,
+        'opciones_proyectos': opciones_proyectos,
+        'total_envios': total_envios,
+        'nuevas_30d': nuevas_30d,
+        'aprobadas': aprobadas,
+            'categorias_labels_json': json.dumps(categorias_labels, ensure_ascii=False),
+            'categorias_data_json': json.dumps(categorias_data),
+            'trimestres_labels_json': json.dumps(trimestres_labels, ensure_ascii=False),
+            'datos_trimestrales_nuevas_json': json.dumps(datos_trimestrales_nuevas),
+            'datos_trimestrales_aprobadas_json': json.dumps(datos_trimestrales_aprobadas),
+        'usuarios_labels_json': json.dumps(usuarios_labels, ensure_ascii=False),
+        'usuarios_data_json': json.dumps(usuarios_data),
+        'pct_nuevas': pct_nuevas,
+        'pct_aprobadas': pct_aprobadas,
+        'pct_total': pct_total,
+        'pct_nuevas_abs': pct_nuevas_abs,
+        'pct_aprobadas_abs': pct_aprobadas_abs,
+        'pct_total_abs': pct_total_abs,
+        'aprobadas_30d': aprobadas_30d,
     }
     return render(request, 'evidencias_list.html', context)
 
@@ -297,6 +468,19 @@ def instructor_table(request):
 def access_denied(request):
     """Vista para mostrar página de acceso denegado."""
     return render(request, 'access_denied.html')
+
+
+@require_POST
+@require_group('coordinador')
+def set_aprobada(request, pk):
+    """Marca una `Envio.aprobada` True/False según el POST 'valor'."""
+    envio = get_object_or_404(Envio, pk=pk)
+    valor = request.POST.get('valor')
+    envio.aprobada = True if valor in ('1', 'true', 'True', 'on') else False
+    envio.save()
+    messages.success(request, 'Estado de evidencia actualizado.')
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/evidencias/'
+    return redirect(next_url)
 
 def exportar_csv(request):
     """Exportar envíos a CSV."""
