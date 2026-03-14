@@ -2,11 +2,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GESICOM - Inicio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESICOM - Panel Instructor</title>
     <link rel="stylesheet" href="{% static 'instructor/panel_usuario.css' %}">
-    <!-- Reutilizamos estilos existentes para mantener coherencia y responsividad -->
 </head>
 <body>
 
@@ -16,16 +15,26 @@
         <small>Panel del Instructor</small>
     </div>
 
- 
+    <nav>
+        <a href="{% url 'home' %}">Inicio</a>
+        <a href="{% url 'evidencia' %}">Enviar evidencia</a>
+        <a href="{% url 'evidencias_list' %}">Mis evidencias</a>
+        <a href="#perfil">Perfil</a>
+    </nav>
 
     <div class="user-menu-container">
         <div class="user-menu-toggle">
-            <img src="{% static 'img/instructor.png' %}" alt="Avatar" class="avatar">
+            <img src="{% static 'instructor/usuario.png' %}" alt="Avatar" class="avatar">
             <span>{{ user.first_name|default:user.username }}</span>
             <ul class="user-dropdown">
                 <li><a href="#perfil">Perfil</a></li>
                 <li><a href="#configuracion">Configuración</a></li>
-                <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+             <li>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Cerrar sesión</button>
+    </form>
+</li>
             </ul>
         </div>
     </div>
@@ -40,7 +49,7 @@
 
     <section class="welcome-section">
         <div>
-            <img src="{% static 'img/instructor.png' %}" alt="avatar" class="welcome-avatar">
+            <img src="{% static 'instructor/usuario.png' %}" alt="avatar" class="welcome-avatar">
         </div>
         <div>
             <h2>Bienvenido, {{ user.first_name|default:user.username }}</h2>
@@ -53,7 +62,7 @@
         <div class="card">
             <h3>Enviar Evidencia</h3>
             <p>Subir nuevos archivos</p>
-              <a href="{% url 'evidencia' %}" class="btn-primary">Enviar</a>
+            <a href="{% url 'evidencia' %}" class="btn-primary">Enviar</a>
         </div>
 
         <div class="card">
@@ -72,7 +81,7 @@
         <div class="card">
             <h3>Perfil</h3>
             <p>Editar información</p>
-           <a href="{% url 'editar_perfil' %}" class="btn-secondary">Editar Perfil</a>
+            <a href="{% url 'editar_perfil' %}" class="btn-secondary">Editar Perfil</a>
         </div>
 
         <div class="card">
@@ -82,8 +91,6 @@
         </div>
 
     </section>
-
-    
 
 </main>
 
