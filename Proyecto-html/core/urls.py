@@ -31,6 +31,7 @@ urlpatterns = [
     path('contacto/', gesicom_views.contacto, name='contacto'),
     path('ayuda/', gesicom_views.ayuda, name='ayuda'),
     path('portal/', gesicom_views.portal, name='portal'),
+    path('reportes/', usuarios_views.reportes, name='reportes'),
     
     path('roles/instructor/', gesicom_views.role_instructor, name='role_instructor'),
     path('roles/instructor-table/', gesicom_views.instructor_table, name='instructor_table'),

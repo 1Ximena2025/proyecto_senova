@@ -6,6 +6,10 @@ from django.contrib.auth.models import User, Group
 import logging
 import traceback
 from django.db import transaction, IntegrityError
+from django.db.models import Count, Q
+from Gesicom.models import Envio
+import json
+from datetime import date, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +180,70 @@ def panel_usuario(request):
 def panel_instructor(request):
     """Vista del panel personal del instructor."""
     return render(request, 'panel_instructor.html')
+
+
+@login_required(login_url='login')
+def reportes(request):
+    """Vista del panel de reportes de evidencia."""
+    # Filtros
+    inicio = request.GET.get('inicio')
+    fin = request.GET.get('fin')
+    categoria = request.GET.get('categoria')
+    consulta = Envio.objects.all()
+    if inicio:
+        consulta = consulta.filter(fecha_envio__gte=inicio)
+    if fin:
+        consulta = consulta.filter(fecha_envio__lte=fin)
+    if categoria and categoria != 'Todas':
+        consulta = consulta.filter(proyecto=categoria)
+
+    total_evidencias = consulta.count()
+    nuevas_30d = consulta.filter(fecha_envio__gte=date.today()-timedelta(days=30)).count()
+    aprobadas = consulta.filter(aprobada=True).count()
+    rechazadas = consulta.filter(aprobada=False).count()
+
+    # Por día (últimos 15 días)
+    dias = [date.today()-timedelta(days=i) for i in range(14,-1,-1)]
+    evidencias_por_dia = [consulta.filter(fecha_envio=d).count() for d in dias]
+    aprobadas_por_dia = [consulta.filter(fecha_envio=d, aprobada=True).count() for d in dias]
+    dias_labels = [d.strftime('%d/%m') for d in dias]
+
+    # Por usuario (top 6)
+    top_usuarios = consulta.values('usuario__first_name','usuario__last_name','usuario__username').annotate(total=Count('id')).order_by('-total')[:6]
+    usuarios_labels = []
+    usuarios_data = []
+    for u in top_usuarios:
+        nombre = u['usuario__first_name'] or u['usuario__username']
+        if u['usuario__last_name']:
+            nombre += f" {u['usuario__last_name']}"
+        usuarios_labels.append(nombre)
+        usuarios_data.append(u['total'])
+
+    # Por categoría
+    categorias = dict(Envio.PROYECTO_CHOICES)
+    categorias_labels = list(categorias.values())
+    categorias_data = [consulta.filter(proyecto=key).count() for key in categorias.keys()]
+
+    # Por estado
+    estado_labels = ['Aprobadas', 'Nuevas', 'Rechazadas']
+    estado_data = [aprobadas, nuevas_30d, rechazadas]
+
+    context = {
+        'total_evidencias': total_evidencias,
+        'nuevas_30d': nuevas_30d,
+        'aprobadas': aprobadas,
+        'rechazadas': rechazadas,
+        'evidencias_por_dia': json.dumps(evidencias_por_dia),
+        'aprobadas_por_dia': json.dumps(aprobadas_por_dia),
+        'dias_labels': json.dumps(dias_labels),
+        'usuarios_labels': json.dumps(usuarios_labels),
+        'usuarios_data': json.dumps(usuarios_data),
+        'categorias_labels': json.dumps(categorias_labels),
+        'categorias_data': json.dumps(categorias_data),
+        'estado_labels': json.dumps(estado_labels),
+        'estado_data': json.dumps(estado_data),
+    }
+    return render(request, 'reportes.html', context)
 
 
 def logout_view(request):
