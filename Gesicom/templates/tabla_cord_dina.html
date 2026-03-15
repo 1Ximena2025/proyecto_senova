@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESICOM - Panel Coordinador</title>
+    <link rel="stylesheet" href="{% static 'CSS/panel_coordinador.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="header-brand">
+        <h1>GESICOM</h1>
+        <small>Panel del Coordinador</small>
+    </div>
+    <nav>
+        <a href="{% url 'home' %}">Inicio</a>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-cerrar-sesion">Cerrar sesión</button>
+        </form>
+    </nav>
+</header>
+
+<main>
+
+    <section class="breadcrumb">
+        <a href="{% url 'home' %}" class="btn-inicio">Inicio</a>
+        <span class="breadcrumb-sep">›</span>
+        <h2>Panel del Coordinador</h2>
+    </section>
+
+    <!-- Filtros -->
+    <section class="filtros-section">
+        <div class="filtros-card">
+            <h3 class="filtros-title">Filtrar evidencias</h3>
+            <div class="filtros-grid">
+
+                <div class="filtro-group">
+                    <label for="filtro-area">Área / Proyecto</label>
+                    <select id="filtro-area">
+                        <option value="">Todas las áreas</option>
+                        <option value="LEM">LEM</option>
+                        <option value="GIVIT">GIVIT</option>
+                        <option value="ACAF">ACAF</option>
+                        <option value="DEPOS">DEPOS</option>
+                        <option value="IFPI">IFPI</option>
+                        <option value="TUGA">TUGA</option>
+                    </select>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="filtro-estado">Estado</label>
+                    <select id="filtro-estado">
+                        <option value="">Todos los estados</option>
+                        <option value="revision">En revisión</option>
+                        <option value="aprobada">Aprobada</option>
+                        <option value="rechazada">Rechazada</option>
+                    </select>
+                </div>
+
+                <div class="filtro-group filtro-actions">
+                    <button id="btn-limpiar" class="btn-limpiar">Limpiar filtros</button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Contador -->
+    <section class="resultados-header">
+        <p>Mostrando <span id="contador">{{ envios|length }}</span> evidencia(s)</p>
+    </section>
+
+    <!-- Tabla -->
+    <section class="tabla-section">
+        <div class="tabla-wrapper">
+            <table class="tabla-evidencias" id="tabla-evidencias">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Área</th>
+                        <th>Fecha</th>
+                        <th>Evidencia</th>
+                        <th>Añadir comentario</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for envio in envios %}
+                    <tr class="fila-evidencia"
+                        data-area="{{ envio.proyecto }}"
+                        data-estado="{% if envio.aprobada %}aprobada{% elif envio.rechazada %}rechazada{% else %}revision{% endif %}"
+                        data-id="{{ envio.pk }}">
+
+                        <td class="td-nombre">
+                            <span class="nombre-instructor">{{ envio.usuario.get_full_name|default:envio.usuario.username }}</span>
+                            <span class="tipo-evidencia">{{ envio.tipo_evidencia }}</span>
+                        </td>
+
+                        <td>
+                            <span class="badge-area badge-area--{{ envio.proyecto|lower }}">
+                                {{ envio.proyecto|default:"—" }}
+                            </span>
+                        </td>
+
+                        <td class="td-fecha">{{ envio.fecha_envio|date:"d/m/Y" }}</td>
+
+                        <td class="td-evidencia">
+                            {% if envio.archivo_evidencia %}
+                                <a href="{{ envio.archivo_evidencia.url }}" target="_blank" class="btn-ver-archivo">
+                                    📎 Ver archivo
+                                </a>
+                            {% elif envio.link_evidencia %}
+                                <a href="{{ envio.link_evidencia }}" target="_blank" class="btn-ver-archivo">
+                                    🔗 Ver enlace
+                                </a>
+                            {% else %}
+                                <span class="sin-archivo">Sin archivo</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="td-comentario">
+                            <form method="post" action="{% url 'set_aprobada' envio.pk %}" class="form-comentario">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <textarea name="comentario_coordinador"
+                                          class="input-comentario"
+                                          placeholder="Escribe un comentario..."
+                                          rows="2">{{ envio.observaciones|default:'' }}</textarea>
+                                <button type="submit" name="valor" value="comentario" class="btn-comentario">
+                                    Guardar
+                                </button>
+                            </form>
+                        </td>
+
+                        <td class="td-estado">
+                            <div class="estado-actual">
+                                {% if envio.aprobada %}
+                                    <span class="badge-estado badge-aprobada">✓ Aprobada</span>
+                                {% elif envio.rechazada %}
+                                    <span class="badge-estado badge-rechazada">✗ Rechazada</span>
+                                {% else %}
+                                    <span class="badge-estado badge-revision">⏳ En revisión</span>
+                                {% endif %}
+                            </div>
+                            <div class="acciones-estado">
+                                <form method="post" action="{% url 'set_aprobada' envio.pk %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" name="valor" value="1" class="btn-aprobar" title="Aprobar">✓</button>
+                                </form>
+                                <form method="post" action="{% url 'set_aprobada' envio.pk %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" name="valor" value="0" class="btn-rechazar" title="Rechazar">✗</button>
+                                </form>
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="td-empty">No hay evidencias registradas aún.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div id="no-resultados" class="no-resultados" style="display:none;">
+                <p>No se encontraron evidencias con los filtros seleccionados.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    const filtroArea = document.getElementById('filtro-area');
+    const filtroEstado = document.getElementById('filtro-estado');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    const contador = document.getElementById('contador');
+    const noResultados = document.getElementById('no-resultados');
+
+    function aplicarFiltros() {
+        const area = filtroArea.value;
+        const estado = filtroEstado.value;
+        const filas = document.querySelectorAll('.fila-evidencia');
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const matchArea = !area || fila.dataset.area === area;
+            const matchEstado = !estado || fila.dataset.estado === estado;
+            if (matchArea && matchEstado) {
+                fila.style.display = '';
+                visibles++;
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+
+        contador.textContent = visibles;
+        noResultados.style.display = visibles === 0 ? 'block' : 'none';
+    }
+
+    filtroArea.addEventListener('change', aplicarFiltros);
+    filtroEstado.addEventListener('change', aplicarFiltros);
+    btnLimpiar.addEventListener('click', () => {
+        filtroArea.value = '';
+        filtroEstado.value = '';
+        aplicarFiltros();
+    });
+</script>
+
+</body>
+</html>
