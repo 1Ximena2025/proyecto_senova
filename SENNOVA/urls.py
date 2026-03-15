@@ -9,6 +9,8 @@ from cuentas import views as cuentas_views
 
 urlpatterns = [
 
+    path('instructor/', include('instructor.urls')),
+
     path('admin/', admin.site.urls),
     path('administrador/', include('ADMIN.urls')),
     path('', usuarios_views.login_view, name='login_root'),
