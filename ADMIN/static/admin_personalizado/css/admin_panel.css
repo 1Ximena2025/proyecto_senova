@@ -182,7 +182,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.875rem 1.25rem;
+    padding: 0.875rem 1.25rem;   
     color: var(--color-text-dark);
     text-decoration: none;
     border-radius: 8px;
