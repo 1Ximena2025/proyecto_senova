@@ -2,10 +2,10 @@
 
 /* ── Variables ── */
 :root {
-    --verde: #2e7d4f;
-    --verde-claro: #4caf50;
+    --verde: #39A900;
+    --verde-claro: #39A900;
     --verde-fondo: #f0f7f2;
-    --verde-hover: #245f3c;
+    --verde-hover: #007832;
     --gris-bg: #f5f6fa;
     --gris-borde: #e0e4ec;
     --gris-texto: #6b7280;
@@ -30,8 +30,8 @@
 }
 
 .btn-cerrar-sesion:hover {
-    color: #2e7d4f;
-    border-bottom-color: #2e7d4f;
+    color: #39A900;
+    border-bottom-color: #39A900;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
