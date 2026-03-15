@@ -1,10 +1,10 @@
 /* Admin Panel Styles - Modern UI Design */
 
 :root {
-    /* Color Palette - Verde Salvia */
-    --color-primary: #6b8e6f;
-    --color-primary-dark: #5a7a5e;
-    --color-primary-light: #9db89f;
+    /* Color Palette - Verde */
+    --color-primary: #39A900;
+    --color-primary-dark: #007832;
+    --color-primary-light: #39A900;
     --color-sidebar: #b8cfb9;
     --color-sidebar-hover: #a8bfa9;
     --color-sidebar-active: #6b8e6f;
@@ -15,7 +15,7 @@
     --color-text-gray: #4a5568;
     --color-text-light: #718096;
     --color-border: #e2e8f0;
-    --color-success: #6b8e6f;
+    --color-success: #39A900;
     --color-cancel: #cbd5e0;
     --color-white: #ffffff;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
