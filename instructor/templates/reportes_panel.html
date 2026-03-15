@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de Evidencia</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/instructor/reportes_panel.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light" style="background: linear-gradient(90deg, #6ec6ca 0%, #b6c7a8 100%);">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold" style="color:#1b3c3c;">GESICOM</span>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/instructor/panel">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Reportes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container py-4">
+        <h2 class="mb-4">Reportes de Evidencia</h2>
+        <form method="get" autocomplete="off">
+        <div class="row mb-4 filtros-row">
+            <div class="col-md-3">
+                <label>Inicio</label>
+                <input type="date" class="form-control" name="inicio" value="{{ filtros.inicio }}">
+            </div>
+            <div class="col-md-3">
+                <label>Fin</label>
+                <input type="date" class="form-control" name="fin" value="{{ filtros.fin }}">
+            </div>
+            <div class="col-md-3">
+                <label>Categoría</label>
+                <select class="form-control" name="categoria">
+                    <option value="Todas" {% if filtros.categoria == 'Todas' %}selected{% endif %}>Todas</option>
+                    {% for cod, nombre in opciones_categorias %}
+                        <option value="{{ cod }}" {% if filtros.categoria == cod %}selected{% endif %}>{{ nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-success w-100" type="submit">Filtrar</button>
+            </div>
+        </div>
+        </form>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="kpi"><span class="kpi-icon">📁</span>{{ total_evidencias }}</div>
+                    <div class="kpi-label">Total Evidencias</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="kpi"><span class="kpi-icon">➕</span>{{ nuevas_evidencias }}</div>
+                    <div class="kpi-label">Nuevas Evidencias (últ. 30 días)</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="kpi"><span class="kpi-icon">✅</span>{{ evidencias_aprobadas }}</div>
+                    <div class="kpi-label">Evidencias Aprobadas</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <canvas id="evidenciasPorDia"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container mb-4">
+                    <canvas id="categoriasEvidencia"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="estadoEvidencia"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <canvas id="evidenciasPorUsuario"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Datos dinámicos desde Django
+        const labelsDias = {{ labels_dias|safe }};
+        const nuevasPorDia = {{ nuevas_por_dia|safe }};
+        const aprobadasPorDia = {{ aprobadas_por_dia|safe }};
+        const labelsCategoria = {{ labels_categoria|safe }};
+        const dataCategoria = {{ data_categoria|safe }};
+        const dataEstado = {{ data_estado|safe }};
+        const labelsUsuarios = {{ labels_usuarios|safe }};
+        const dataUsuarios = {{ data_usuarios|safe }};
+
+        // Gráfica: Evidencias por Día
+        new Chart(document.getElementById('evidenciasPorDia'), {
+            type: 'bar',
+            data: {
+                labels: labelsDias,
+                datasets: [
+                    { label: 'Nuevas', data: nuevasPorDia, backgroundColor: '#f9d923' },
+                    { label: 'Aprobadas', data: aprobadasPorDia, backgroundColor: '#1db954' }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+        // Gráfica: Categorías de Evidencia
+        new Chart(document.getElementById('categoriasEvidencia'), {
+            type: 'doughnut',
+            data: {
+                labels: labelsCategoria,
+                datasets: [{ data: dataCategoria, backgroundColor: ['#1db954','#f9d923','#ff7f50','#7b68ee','#ffa500','#00bcd4','#ff9800'] }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        // Gráfica: Estado de Evidencia
+        new Chart(document.getElementById('estadoEvidencia'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Aprobadas','Nuevas','Rechazadas'],
+                datasets: [{ data: dataEstado, backgroundColor: ['#1db954','#f9d923','#ff4d4f'] }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        // Gráfica: Evidencias por Usuario
+        new Chart(document.getElementById('evidenciasPorUsuario'), {
+            type: 'bar',
+            data: {
+                labels: labelsUsuarios,
+                datasets: [{
+                    label: 'Evidencias',
+                    data: dataUsuarios,
+                    backgroundColor: ['#1db954','#f9d923','#ff7f50','#7b68ee','#ffa500']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    </script>
+</body>
+</html>

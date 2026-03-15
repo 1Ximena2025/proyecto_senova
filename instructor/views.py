@@ -1,3 +1,76 @@
+from django.contrib.auth.decorators import login_required
+
+
+from Gesicom.models import Envio
+from Gesicom.utils import calculate_stats, calculate_monthly_stats, apply_date_filters
+from django.db.models import Count, Q
+import datetime
+
+# Vista para el panel de reportes del instructor
+@login_required(login_url='login')
+def reportes_panel(request):
+	# Filtros
+	inicio = request.GET.get('inicio')
+	fin = request.GET.get('fin')
+	categoria = request.GET.get('categoria')
+	consulta = Envio.objects.all()
+	if inicio:
+		consulta = consulta.filter(fecha_envio__gte=inicio)
+	if fin:
+		consulta = consulta.filter(fecha_envio__lte=fin)
+	if categoria and categoria != 'Todas':
+		consulta = consulta.filter(proyecto=categoria)
+
+	# KPIs
+	total_evidencias = consulta.count()
+	nuevas_evidencias = consulta.filter(fecha_envio__gte=(datetime.date.today() - datetime.timedelta(days=30))).count()
+	evidencias_aprobadas = consulta.filter(aprobada=True).count()
+	evidencias_rechazadas = consulta.filter(rechazada=True).count()
+
+	# Gráfica: Evidencias por día (últimos 12 días)
+	hoy = datetime.date.today()
+	dias = [(hoy - datetime.timedelta(days=i)) for i in range(11, -1, -1)]
+	labels_dias = [d.strftime('%d/%m') for d in dias]
+	nuevas_por_dia = [consulta.filter(fecha_envio=d).count() for d in dias]
+	aprobadas_por_dia = [consulta.filter(fecha_envio=d, aprobada=True).count() for d in dias]
+
+	# Gráfica: Categorías de evidencia
+	stats_categoria, _ = calculate_stats(consulta, 'proyecto')
+	labels_categoria = [s['field_value'] for s in stats_categoria]
+	data_categoria = [s['total'] for s in stats_categoria]
+
+	# Gráfica: Estado de evidencia
+	data_estado = [evidencias_aprobadas, nuevas_evidencias, evidencias_rechazadas]
+
+	# Gráfica: Evidencias por usuario (top 5)
+	usuarios_stats = consulta.values('usuario__first_name', 'usuario__last_name').annotate(total=Count('id')).order_by('-total')[:5]
+	labels_usuarios = [f"{u['usuario__first_name']} {u['usuario__last_name']}".strip() for u in usuarios_stats]
+	data_usuarios = [u['total'] for u in usuarios_stats]
+
+	# Opciones de categorías
+	opciones_categorias = list(Envio.PROYECTO_CHOICES)
+
+	context = {
+		'total_evidencias': total_evidencias,
+		'nuevas_evidencias': nuevas_evidencias,
+		'evidencias_aprobadas': evidencias_aprobadas,
+		'evidencias_rechazadas': evidencias_rechazadas,
+		'labels_dias': labels_dias,
+		'nuevas_por_dia': nuevas_por_dia,
+		'aprobadas_por_dia': aprobadas_por_dia,
+		'labels_categoria': labels_categoria,
+		'data_categoria': data_categoria,
+		'data_estado': data_estado,
+		'labels_usuarios': labels_usuarios,
+		'data_usuarios': data_usuarios,
+		'opciones_categorias': opciones_categorias,
+		'filtros': {
+			'inicio': inicio or '',
+			'fin': fin or '',
+			'categoria': categoria or 'Todas',
+		}
+	}
+	return render(request, 'reportes_panel.html', context)
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required

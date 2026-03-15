@@ -1,0 +1,20 @@
+/* Estilos para el panel de reportes de instructor */
+body { background: #f6f8fa; }
+.card { border-radius: 18px; box-shadow: 0 2px 8px #0001; }
+.kpi { font-size: 2rem; font-weight: bold; }
+.kpi-label { font-size: 1rem; color: #888; }
+.kpi-up { color: #1db954; font-size: 1.1rem; }
+.kpi-icon { font-size: 1.5rem; margin-right: 8px; }
+.chart-container { background: #fff; border-radius: 18px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 8px; }
+
+/* Filtros */
+.filtros-row label { font-weight: 500; color: #1b3c3c; }
+.filtros-row .form-control { border-radius: 10px; }
+.filtros-row .btn { border-radius: 10px; font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chart-container { padding: 0.7rem; }
+  .kpi { font-size: 1.3rem; }
+}
