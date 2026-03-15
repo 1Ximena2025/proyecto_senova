@@ -121,7 +121,7 @@ main {
 }
 
 .breadcrumb button {
-    background: #39a96b;
+    background: #39A900;
     color: #fff;
     padding: 6px 15px;
     border: none;
@@ -152,7 +152,7 @@ main {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: #39a96b;
+    background: #39A900;
 }
 
 .welcome-section h2 {
@@ -208,12 +208,12 @@ button {
 }
 
 .btn-primary {
-    background: #39a96b;
+    background: #39A900;
     color: #fff;
 }
 
 .btn-primary:hover {
-    background: #2e8b56;
+    background: #39A900;
 }
 
 .btn-secondary {
@@ -261,7 +261,7 @@ button {
 }
 
 .badge-approved {
-    background: #39a96b;
+    background: #39A900;
     color: #fff;
 }
 
