@@ -1,64 +1,44 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Estado de Evidencias</title>
-    {% load static %}
-   
-    <link rel="stylesheet" href="{% static 'CSS/panel_evidencias.css' %}"> <!-- panel personalizado -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style> /* ajustes rápidos responsive */
-        .container { max-width:1100px; margin:20px auto; padding:12px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESICOM - Mis Evidencias</title>
+  <link rel="stylesheet" href="{% static 'CSS/panel_evidencias.css' %}">
 </head>
 <body>
-</script>
- 
+
 <header>
     <div class="header-brand">
         <h1>GESICOM</h1>
         <small>Panel del Instructor</small>
     </div>
     <nav>
-        <a href="{% url 'home' %}">Inicio</a>
-        <a href="{% url 'evidencia' %}">Enviar evidencia</a>
-        <a href="{% url 'evidencias_list' %}" class="active">Mis evidencias</a>
-        <a href="#perfil">Perfil</a>
+        <a href="{% url 'home' %}">Menú</a>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-cerrar-sesion">
+                🔒 Cerrar sesión
+            </button>
+        </form>
     </nav>
-    <div class="user-menu-container">
-        <div class="user-menu-toggle">
-            <img src="{% static 'instructor/usuario.png' %}" alt="Avatar" class="avatar">
-            <span>{{ user.first_name|default:user.username }}</span>
-            <ul class="user-dropdown">
-                <li><a href="#perfil">Perfil</a></li>
-                <li><a href="#configuracion">Configuración</a></li>
-                <li>
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit">Cerrar sesión</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    </div>
 </header>
- 
+
 <main>
- 
+
     <section class="breadcrumb">
         <a href="{% url 'home' %}" class="btn-inicio">Inicio</a>
         <span class="breadcrumb-sep">›</span>
         <h2>Mis Evidencias</h2>
     </section>
- 
+
     <!-- Filtros -->
     <section class="filtros-section">
         <div class="filtros-card">
             <h3 class="filtros-title">Filtrar evidencias</h3>
             <div class="filtros-grid">
- 
+
                 <div class="filtro-group">
                     <label for="filtro-area">Área / Proyecto</label>
                     <select id="filtro-area">
@@ -71,7 +51,7 @@
                         <option value="TUGA">TUGA</option>
                     </select>
                 </div>
- 
+
                 <div class="filtro-group">
                     <label for="filtro-estado">Estado</label>
                     <select id="filtro-estado">
@@ -80,20 +60,20 @@
                         <option value="aprobada">Aprobadas</option>
                     </select>
                 </div>
- 
+
                 <div class="filtro-group filtro-actions">
                     <button id="btn-limpiar" class="btn-limpiar">Limpiar filtros</button>
                 </div>
- 
+
             </div>
         </div>
     </section>
- 
+
     <!-- Contador -->
     <section class="resultados-header">
         <p>Mostrando <span id="contador">{{ envios|length }}</span> evidencia(s)</p>
     </section>
- 
+
     <!-- Tabla -->
     <section class="tabla-section">
         <div class="tabla-wrapper">
@@ -142,35 +122,35 @@
                     {% endfor %}
                 </tbody>
             </table>
- 
+
             <!-- Mensaje cuando no hay resultados del filtro -->
             <div id="no-resultados" class="no-resultados" style="display:none;">
                 <p>No se encontraron evidencias con los filtros seleccionados.</p>
             </div>
         </div>
     </section>
- 
+
 </main>
- 
+
 <script>
     const filtroArea = document.getElementById('filtro-area');
     const filtroEstado = document.getElementById('filtro-estado');
     const btnLimpiar = document.getElementById('btn-limpiar');
     const contador = document.getElementById('contador');
     const noResultados = document.getElementById('no-resultados');
- 
+
     function aplicarFiltros() {
         const area = filtroArea.value;
         const estado = filtroEstado.value;
         const filas = document.querySelectorAll('.fila-evidencia');
         let visibles = 0;
- 
+
         filas.forEach(fila => {
             const filaArea = fila.dataset.area;
             const filaEstado = fila.dataset.estado;
             const matchArea = !area || filaArea === area;
             const matchEstado = !estado || filaEstado === estado;
- 
+
             if (matchArea && matchEstado) {
                 fila.style.display = '';
                 visibles++;
@@ -178,20 +158,20 @@
                 fila.style.display = 'none';
             }
         });
- 
+
         contador.textContent = visibles;
         noResultados.style.display = visibles === 0 ? 'block' : 'none';
     }
- 
+
     filtroArea.addEventListener('change', aplicarFiltros);
     filtroEstado.addEventListener('change', aplicarFiltros);
- 
+
     btnLimpiar.addEventListener('click', () => {
         filtroArea.value = '';
         filtroEstado.value = '';
         aplicarFiltros();
     });
 </script>
- 
+
 </body>
 </html>

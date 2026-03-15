@@ -16,7 +16,23 @@
     --sombra: 0 2px 12px rgba(0,0,0,0.07);
     --radio: 12px;
 }
+.btn-cerrar-sesion {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7280;
+    padding: 0.3rem 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
 
+.btn-cerrar-sesion:hover {
+    color: #2e7d4f;
+    border-bottom-color: #2e7d4f;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -282,8 +298,6 @@ main {
     color: var(--verde);
 }
 
-/* ── Tabla ── */
-.tabla-section {}
 
 .tabla-wrapper {
     background: var(--blanco);
