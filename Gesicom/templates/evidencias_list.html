@@ -33,42 +33,6 @@
         </div>
     </div>
 
-    <div class="filter-card">
-        <div class="filter-col">
-            <div>
-                <label>Inicio</label>
-                <input type="date" id="f_start" name="start" value="{{ start }}">
-            </div>
-            <div>
-                <label>Fin</label>
-                <input type="date" id="f_end" name="end" value="{{ end }}">
-            </div>
-            <div>
-                <label>Categoria</label>
-                <select id="categoria" name="proyecto">
-                    <option value="">Todas</option>
-                    {% for val,label in opciones_proyectos %}
-                        <option value="{{ val }}" {% if proyecto == val %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label>Trimestre</label>
-                <select id="select_quarters" name="quarters">
-                    <option value="4" {% if request.GET.quarters == '4' %}selected{% endif %}>4</option>
-                    <option value="6" {% if request.GET.quarters == '6' %}selected{% endif %}>6</option>
-                    <option value="8" {% if request.GET.quarters == '8' %}selected{% endif %}>8</option>
-                    <option value="12" {% if request.GET.quarters == '12' %}selected{% endif %}>12</option>
-                </select>
-            </div>
-        </div>
-        <div class="filter-actions">
-            <button id="btn_filtrar" class="btn">Filtrar</button>
-            <a href="{% url 'reportes_csv' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-icon">⬇ Exportar CSV</a>
-            <a href="{% url 'reportes_trimestrales_csv' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-icon">⬇ Exportar Trimestral CSV</a>
-        </div>
-    </div>
-
     <div class="cards">
         <div class="card">
             <div class="card-center"><div class="card-icon">📁</div><div>
